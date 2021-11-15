@@ -30,6 +30,7 @@
 #include "exec/tb-lookup.h"
 #include "disas/disas.h"
 #include "exec/log.h"
+#include <stdio.h>  // rhf
 
 /* 32-bit helpers */
 
@@ -1057,7 +1058,7 @@ void HELPER(qasan_store8)(CPUArchState *env, target_ulong addr, uint32_t idx)
 // Usermode helpers
 //----------------------------------
 
-void HELPER(qasan_load1)(CPUArchState *env, target_ulong addr) {
+void HELPER(qasan_load1)(CPUArchState *env, target_ulong addr, uint64_t val) {
 
   if (qasan_disabled) return;
   
@@ -1073,7 +1074,7 @@ void HELPER(qasan_load1)(CPUArchState *env, target_ulong addr) {
 
 }
 
-void HELPER(qasan_load2)(CPUArchState *env, target_ulong addr) {
+void HELPER(qasan_load2)(CPUArchState *env, target_ulong addr, uint64_t val) {
 
   if (qasan_disabled) return;
 
@@ -1089,7 +1090,7 @@ void HELPER(qasan_load2)(CPUArchState *env, target_ulong addr) {
 
 }
 
-void HELPER(qasan_load4)(CPUArchState *env, target_ulong addr) {
+void HELPER(qasan_load4)(CPUArchState *env, target_ulong addr, uint64_t val) {
 
   if (qasan_disabled) return;
   
@@ -1105,7 +1106,7 @@ void HELPER(qasan_load4)(CPUArchState *env, target_ulong addr) {
 
 }
 
-void HELPER(qasan_load8)(CPUArchState *env, target_ulong addr) {
+void HELPER(qasan_load8)(CPUArchState *env, target_ulong addr, uint64_t val) {
 
   if (qasan_disabled) return;
   
@@ -1121,7 +1122,7 @@ void HELPER(qasan_load8)(CPUArchState *env, target_ulong addr) {
 
 }
 
-void HELPER(qasan_store1)(CPUArchState *env, target_ulong addr) {
+void HELPER(qasan_store1)(CPUArchState *env, target_ulong addr, uint64_t val) {
 
   if (qasan_disabled) return;
   
@@ -1129,6 +1130,7 @@ void HELPER(qasan_store1)(CPUArchState *env, target_ulong addr) {
 
 #ifdef ASAN_GIOVESE
   if (asan_giovese_store1(ptr)) {
+    fprintf(stderr, "over-write i64 %016llx to address %016llx\n", val, addr);
     asan_giovese_report_and_crash(ACCESS_TYPE_STORE, addr, 1, PC_GET(env), BP_GET(env), SP_GET(env));
   }
 #else
@@ -1137,7 +1139,7 @@ void HELPER(qasan_store1)(CPUArchState *env, target_ulong addr) {
 
 }
 
-void HELPER(qasan_store2)(CPUArchState *env, target_ulong addr) {
+void HELPER(qasan_store2)(CPUArchState *env, target_ulong addr, uint64_t val) {
 
   if (qasan_disabled) return;
   
@@ -1145,6 +1147,7 @@ void HELPER(qasan_store2)(CPUArchState *env, target_ulong addr) {
   
 #ifdef ASAN_GIOVESE
   if (asan_giovese_store2(ptr)) {
+    fprintf(stderr, "over-write i64 %016llx to address %016llx\n", val, addr);
     asan_giovese_report_and_crash(ACCESS_TYPE_STORE, addr, 2, PC_GET(env), BP_GET(env), SP_GET(env));
   }
 #else
@@ -1153,7 +1156,7 @@ void HELPER(qasan_store2)(CPUArchState *env, target_ulong addr) {
 
 }
 
-void HELPER(qasan_store4)(CPUArchState *env, target_ulong addr) {
+void HELPER(qasan_store4)(CPUArchState *env, target_ulong addr, uint64_t val) {
 
   if (qasan_disabled) return;
   
@@ -1161,6 +1164,7 @@ void HELPER(qasan_store4)(CPUArchState *env, target_ulong addr) {
 
 #ifdef ASAN_GIOVESE
   if (asan_giovese_store4(ptr)) {
+    fprintf(stderr, "over-write i64 %016llx to address %016llx\n", val, addr);
     asan_giovese_report_and_crash(ACCESS_TYPE_STORE, addr, 4, PC_GET(env), BP_GET(env), SP_GET(env));
   }
 #else
@@ -1169,7 +1173,7 @@ void HELPER(qasan_store4)(CPUArchState *env, target_ulong addr) {
 
 }
 
-void HELPER(qasan_store8)(CPUArchState *env, target_ulong addr) {
+void HELPER(qasan_store8)(CPUArchState *env, target_ulong addr, uint64_t val) {
 
   if (qasan_disabled) return;
 
@@ -1177,6 +1181,7 @@ void HELPER(qasan_store8)(CPUArchState *env, target_ulong addr) {
 
 #ifdef ASAN_GIOVESE
   if (asan_giovese_store8(ptr)) {
+    fprintf(stderr, "over-write i64 %016llx to address %016llx\n", val, addr);
     asan_giovese_report_and_crash(ACCESS_TYPE_STORE, addr, 8, PC_GET(env), BP_GET(env), SP_GET(env));
   }
 #else
@@ -1186,3 +1191,7 @@ void HELPER(qasan_store8)(CPUArchState *env, target_ulong addr) {
 }
 
 #endif
+
+void HELPER(rhf_print_val)(target_ulong addr, uint64_t val) {
+  fprintf(stderr, "storing i64 %016llx to address %016llx\n", val, addr);
+}
